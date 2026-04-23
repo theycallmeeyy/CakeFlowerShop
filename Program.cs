@@ -12,6 +12,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.KnownProxies.Clear();
+    options.KnownNetworks.Clear();
+});
+
 builder.Services.AddSingleton<CakeFlowerShop.Services.CartService>();
 
 builder.Services.AddCascadingAuthenticationState();
@@ -26,6 +32,10 @@ builder.Services.AddAuthentication(options =>
     .AddIdentityCookies();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+if (connectionString.Contains("app.db"))
+{
+    connectionString = $"Data Source={Path.Combine(AppContext.BaseDirectory, "app.db")}";
+}
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
