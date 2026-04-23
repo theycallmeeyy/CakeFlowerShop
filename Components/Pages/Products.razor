@@ -1,0 +1,67 @@
+@page "/products"
+@using CakeFlowerShop.Data
+@using CakeFlowerShop.Models
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Web
+@attribute [Authorize]
+@inject ApplicationDbContext DbContext
+@inject CartService CartService
+@rendermode InteractiveServer
+
+<PageTitle>Blossom & Bake - Shop</PageTitle>
+
+<div class="container mb-5" id="shop">
+    <h2 class="section-title mt-5">All Products</h2>
+
+    @if (products == null)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (!products.Any())
+    {
+        <p>No products found.</p>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var product in products)
+            {
+                <div class="col-md-4 col-sm-6">
+                    <div class="product-card">
+                        <img src="@(string.IsNullOrEmpty(product.ImageUrl) ? "https://via.placeholder.com/300x250?text=No+Image" : product.ImageUrl)" class="product-img" alt="@product.Name" />
+                        <div class="product-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h3 class="product-title">@product.Name</h3>
+                                <span class="badge-category">@product.Category.ToString()</span>
+                            </div>
+                            <p class="product-desc">@product.Description</p>
+                            <div class="mt-auto d-flex justify-content-between align-items-center">
+                                <div class="product-price">₱@product.Price.ToString("0.00")</div>
+                                <button class="btn btn-primary btn-sm" @onclick="() => AddToCart(product)">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<Product>? products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await DbContext.Products.ToListAsync();
+    }
+
+    private void AddToCart(Product product)
+    {
+        CartService.AddToCart(product);
+    }
+}

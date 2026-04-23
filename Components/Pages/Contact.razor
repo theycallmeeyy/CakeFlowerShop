@@ -1,0 +1,106 @@
+@page "/contact"
+@rendermode InteractiveServer
+
+<PageTitle>Contact Us - Blossom & Bake</PageTitle>
+
+<div class="container my-5">
+    <h2 class="text-center mb-2" style="font-family: 'Playfair Display', serif; color: #1e3a5f;">Contact Us</h2>
+    <p class="text-center text-muted mb-5">We'd love to hear from you! Reach out to us anytime.</p>
+
+    <div class="row g-4 justify-content-center">
+        <!-- Address Card -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 text-center p-4">
+                <div class="card-body">
+                    <div class="mb-3" style="font-size: 2.5rem; color: #c8a96e;">📍</div>
+                    <h5 class="fw-bold" style="color: #1e3a5f;">Our Address</h5>
+                    <p class="text-muted mt-3">Antipolo, Rizal<br/>Philippines</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Card -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 text-center p-4">
+                <div class="card-body">
+                    <div class="mb-3" style="font-size: 2.5rem; color: #c8a96e;">✉️</div>
+                    <h5 class="fw-bold" style="color: #1e3a5f;">Email Us</h5>
+                    <p class="text-muted mt-3">
+                        <a href="mailto:canoaaron24@gmail.com" style="color: #c8a96e; text-decoration: none;">canoaaron24@@gmail.com</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phone Card -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 text-center p-4">
+                <div class="card-body">
+                    <div class="mb-3" style="font-size: 2.5rem; color: #c8a96e;">📞</div>
+                    <h5 class="fw-bold" style="color: #1e3a5f;">Call Us</h5>
+                    <p class="text-muted mt-3">
+                        <a href="tel:09641897120" style="color: #c8a96e; text-decoration: none;">09641897120</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rate Us Section -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm p-5 text-center" style="background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);">
+                <h3 class="mb-3" style="font-family: 'Playfair Display', serif; color: #fff;">Rate Our Business</h3>
+                <p class="mb-4" style="color: rgba(255,255,255,0.7);">How was your experience with us? Let us know!</p>
+
+                <div class="d-flex justify-content-center gap-2 mb-3">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        var starIndex = i;
+                        <span
+                            class="star-rating"
+                            style="font-size: 3rem; cursor: pointer; transition: transform 0.2s; color: @(starIndex <= currentRating ? "#FFD700" : "rgba(255,255,255,0.3)");"
+                            @onclick="() => SetRating(starIndex)"
+                            @onmouseover="() => hoverRating = starIndex"
+                            @onmouseout="() => hoverRating = 0">
+                            @(starIndex <= (hoverRating > 0 ? hoverRating : currentRating) ? "★" : "☆")
+                        </span>
+                    }
+                </div>
+
+                @if (currentRating > 0 && !ratingSubmitted)
+                {
+                    <p style="color: #FFD700; font-size: 1.1rem;">You selected @currentRating star@(currentRating > 1 ? "s" : "")!</p>
+                    <button class="btn btn-lg px-5 py-2 mt-2" style="background: #c8a96e; color: #fff; border: none; border-radius: 8px; letter-spacing: 1px;" @onclick="SubmitRating">
+                        SUBMIT RATING
+                    </button>
+                }
+
+                @if (ratingSubmitted)
+                {
+                    <div class="mt-3 p-3" style="background: rgba(255,255,255,0.1); border-radius: 12px;">
+                        <p style="color: #FFD700; font-size: 1.2rem; margin: 0;">⭐ Thank you for your @currentRating-star rating!</p>
+                        <p style="color: rgba(255,255,255,0.7); margin: 0; margin-top: 8px;">We appreciate your feedback and strive to serve you better.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int currentRating = 0;
+    private int hoverRating = 0;
+    private bool ratingSubmitted = false;
+
+    private void SetRating(int rating)
+    {
+        currentRating = rating;
+        ratingSubmitted = false;
+    }
+
+    private void SubmitRating()
+    {
+        ratingSubmitted = true;
+    }
+}

@@ -1,0 +1,101 @@
+@page "/cart"
+@implements IDisposable
+@inject CartService CartService
+@rendermode InteractiveServer
+
+<PageTitle>Your Cart</PageTitle>
+
+<div class="container mt-4 mb-5">
+    <h2 class="section-title">Shopping Cart</h2>
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    @if (!CartService.Items.Any())
+                    {
+                        <p class="text-muted text-center py-4">Your cart is currently empty.</p>
+                        <div class="text-center">
+                            <a href="/" class="btn btn-primary">Continue Shopping</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in CartService.Items)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="@item.Product.ImageUrl" alt="@item.Product.Name" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; margin-right: 15px;" onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'" />
+                                                <div>
+                                                    <h6 class="mb-0">@item.Product.Name</h6>
+                                                    <small class="text-muted">@item.Product.Category</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>₱@item.Product.Price.ToString("0.00")</td>
+                                        <td>
+                                            @item.Quantity
+                                        </td>
+                                        <td><strong>₱@item.TotalPrice.ToString("0.00")</strong></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-danger" @onclick="() => CartService.RemoveFromCart(item.Product.Id)">Remove</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 bg-light">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-4 font-weight-bold" style="font-family: 'Playfair Display', serif;">Order Summary</h5>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Subtotal (@CartService.GetTotalCount() items)</span>
+                        <span class="font-weight-bold">₱@CartService.GetTotalAmount().ToString("0.00")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Shipping</span>
+                        <span class="text-success">Free</span>
+                    </div>
+                    <hr />
+                    <div class="d-flex justify-content-between mb-4">
+                        <strong style="font-size: 1.2rem;">Total</strong>
+                        <strong style="font-size: 1.2rem; color: var(--accent-color); font-family: 'Playfair Display', serif;">₱@CartService.GetTotalAmount().ToString("0.00")</strong>
+                    </div>
+                    <a href="/checkout" class="btn btn-accent w-100 py-2 text-uppercase @(CartService.Items.Any() ? "" : "disabled")">Proceed to Checkout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        CartService.OnChange += HandleCartChange;
+    }
+
+    private void HandleCartChange()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        CartService.OnChange -= HandleCartChange;
+    }
+}

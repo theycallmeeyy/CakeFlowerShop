@@ -1,0 +1,97 @@
+@implements IDisposable
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager NavigationManager
+@inject CartService CartService
+
+<nav class="navbar navbar-expand-lg top-navbar">
+    <div class="container">
+        <a class="navbar-brand" href="">
+            Ron's Bakery & Floral
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
+            <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <NavLink class="nav-link px-3" href="" Match="NavLinkMatch.All">Home</NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link px-3" href="products">Products</NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link px-3" href="report">Report Issue</NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link px-3" href="contact">Contact Us</NavLink>
+                </li>
+            </ul>
+            <ul class="navbar-nav align-items-center">
+                <AuthorizeView Roles="Admin">
+                    <Authorized>
+                        <li class="nav-item">
+                            <NavLink class="nav-link px-3 text-warning" href="admin">Dashboard</NavLink>
+                        </li>
+                    </Authorized>
+                </AuthorizeView>
+                <li class="nav-item me-3">
+                    <NavLink class="nav-link px-3" href="cart">
+                        Cart <span class="badge bg-secondary ms-1">@CartService.GetTotalCount()</span>
+                    </NavLink>
+                </li>
+                <AuthorizeView>
+                    <Authorized>
+                        <li class="nav-item">
+                            <NavLink class="nav-link px-3 text-lowercase" style="text-transform: none;" href="Account/Manage">@context.User.Identity?.Name</NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <form action="Account/Logout" method="post">
+                                <AntiforgeryToken />
+                                <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                                <button type="submit" class="btn btn-link nav-link px-3 text-decoration-none">Logout</button>
+                            </form>
+                        </li>
+                    </Authorized>
+                    <NotAuthorized>
+                        <li class="nav-item">
+                            <NavLink class="nav-link px-3" href="Account/Login">Login</NavLink>
+                        </li>
+                        <li class="nav-item ms-lg-2">
+                            <NavLink class="btn btn-primary" href="Account/Register">Register</NavLink>
+                        </li>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+@code {
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+        CartService.OnChange += HandleCartChange;
+    }
+
+    private void HandleCartChange()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        CartService.OnChange -= HandleCartChange;
+    }
+}

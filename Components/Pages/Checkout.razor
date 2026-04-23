@@ -1,0 +1,183 @@
+@page "/checkout"
+@using CakeFlowerShop.Data
+@using CakeFlowerShop.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@inject CartService CartService
+@inject ApplicationDbContext DbContext
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@rendermode InteractiveServer
+
+<PageTitle>Checkout</PageTitle>
+
+<div class="container mt-4 mb-5">
+    <h2 class="section-title">Checkout</h2>
+
+    @if (!CartService.Items.Any())
+    {
+        <div class="alert alert-warning">Your cart is empty. Please add items before checking out.</div>
+        <a href="/" class="btn btn-primary">Go to Home</a>
+    }
+    else
+    {
+        <div class="row mt-4">
+            <div class="col-md-7">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body p-4">
+                        <h4 class="mb-4">Billing Details</h4>
+                        <EditForm Model="@checkoutModel" OnValidSubmit="HandleCheckout">
+                            <DataAnnotationsValidator />
+                            <div class="mb-3">
+                                <label class="form-label">Full Name</label>
+                                <InputText @bind-Value="checkoutModel.Name" class="form-control" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <InputText @bind-Value="checkoutModel.Email" type="email" class="form-control" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Shipping Address</label>
+                                <InputTextArea @bind-Value="checkoutModel.Address" class="form-control" rows="3" required />
+                            </div>
+                            
+                            <h4 class="mt-5 mb-3">Payment Method</h4>
+                            <div class="mb-4">
+                                <InputRadioGroup @bind-Value="checkoutModel.PaymentMethod">
+                                    <div class="form-check mb-2">
+                                        <InputRadio Value="PaymentMethod.GCash" class="form-check-input" id="pmGcash" />
+                                        <label class="form-check-label" for="pmGcash">
+                                            <strong>GCash</strong>
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <InputRadio Value="PaymentMethod.CashOnDelivery" class="form-check-input" id="pmCod" />
+                                        <label class="form-check-label" for="pmCod">
+                                            <strong>Cash on Delivery (COD)</strong>
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <InputRadio Value="PaymentMethod.Card" class="form-check-input" id="pmCard" />
+                                        <label class="form-check-label" for="pmCard">
+                                            <strong>Credit/Debit Card</strong>
+                                        </label>
+                                    </div>
+                                </InputRadioGroup>
+                            </div>
+
+                            <button type="submit" class="btn btn-accent w-100 py-3 text-uppercase fw-bold" disabled="@isProcessing">
+                                @if (isProcessing)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span>Processing...</span>
+                                }
+                                else
+                                {
+                                    <span>Place Order</span>
+                                }
+                            </button>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="card shadow-sm border-0 bg-light">
+                    <div class="card-body p-4">
+                        <h4 class="mb-4">Your Order</h4>
+                        @foreach (var item in CartService.Items)
+                        {
+                            <div class="d-flex justify-content-between mb-3 align-items-center">
+                                <div>
+                                    <h6 class="mb-0">@item.Product.Name</h6>
+                                    <small class="text-muted">Qty: @item.Quantity</small>
+                                </div>
+                                <span>₱@item.TotalPrice.ToString("0.00")</span>
+                            </div>
+                        }
+                        <hr />
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Subtotal</span>
+                            <span>₱@CartService.GetTotalAmount().ToString("0.00")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Shipping</span>
+                            <span class="text-success">Free</span>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong style="font-size: 1.2rem;">Total</strong>
+                            <strong style="font-size: 1.2rem; color: var(--accent-color);">₱@CartService.GetTotalAmount().ToString("0.00")</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private CheckoutModel checkoutModel = new();
+    private bool isProcessing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            checkoutModel.Email = user.Identity.Name ?? "";
+        }
+    }
+
+    private async Task HandleCheckout()
+    {
+        isProcessing = true;
+        
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.Identity?.IsAuthenticated == true ? authState.User.Identity.Name : "Guest";
+
+        var order = new Order
+        {
+            UserId = userId ?? "Guest",
+            CustomerName = checkoutModel.Name,
+            CustomerEmail = checkoutModel.Email,
+            ShippingAddress = checkoutModel.Address,
+            OrderDate = DateTime.UtcNow,
+            Status = OrderStatus.Pending,
+            TotalAmount = CartService.GetTotalAmount(),
+            Items = CartService.Items.Select(i => new OrderItem
+            {
+                ProductId = i.Product.Id,
+                Quantity = i.Quantity,
+                UnitPrice = i.Product.Price
+            }).ToList()
+        };
+
+        var payment = new Payment
+        {
+            Method = checkoutModel.PaymentMethod,
+            Status = checkoutModel.PaymentMethod == PaymentMethod.CashOnDelivery ? PaymentStatus.Pending : PaymentStatus.Paid,
+            PaymentDate = checkoutModel.PaymentMethod != PaymentMethod.CashOnDelivery ? DateTime.UtcNow : null
+        };
+
+        order.Payment = payment;
+
+        DbContext.Orders.Add(order);
+        await DbContext.SaveChangesAsync();
+
+        CartService.ClearCart();
+        isProcessing = false;
+        
+        NavigationManager.NavigateTo($"/receipt/{order.Id}");
+    }
+
+    public class CheckoutModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.CashOnDelivery;
+    }
+}

@@ -1,0 +1,140 @@
+@page "/receipt/{OrderId:int}"
+@using CakeFlowerShop.Data
+@using CakeFlowerShop.Models
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext DbContext
+
+<PageTitle>Order Receipt</PageTitle>
+
+<div class="container mt-5 mb-5">
+    @if (order == null)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Fetching your receipt...</p>
+        </div>
+    }
+    else
+    {
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow border-0" style="border-top: 5px solid var(--accent-color) !important;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-5">
+                            <h2 style="font-family: 'Playfair Display', serif; color: var(--primary-color);">Blossom & Bake</h2>
+                            <p class="text-muted mb-0">Order Receipt</p>
+                            <h4 class="mt-3 text-success">Thank you for your order!</h4>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-sm-6">
+                                <h6 class="text-muted mb-1">Order Details</h6>
+                                <strong>Order ID:</strong> #@order.Id<br />
+                                <strong>Date:</strong> @order.OrderDate.ToLocalTime().ToString("MMMM dd, yyyy h:mm tt")<br />
+                                <strong>Status:</strong> <span class="badge bg-info">@order.Status</span>
+                            </div>
+                            <div class="col-sm-6 text-sm-end mt-4 mt-sm-0">
+                                <h6 class="text-muted mb-1">Billed To</h6>
+                                <strong>@order.CustomerName</strong><br />
+                                @order.CustomerEmail<br />
+                                @order.ShippingAddress
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-borderless border-bottom">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Item</th>
+                                        <th class="text-center">Qty</th>
+                                        <th class="text-end">Price</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in order.Items)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@item.Product.Name</strong>
+                                                @if (!string.IsNullOrEmpty(item.Customization))
+                                                {
+                                                    <br /><small class="text-muted">@item.Customization</small>
+                                                }
+                                            </td>
+                                            <td class="text-center">@item.Quantity</td>
+                                            <td class="text-end">₱@item.UnitPrice.ToString("0.00")</td>
+                                            <td class="text-end">₱@((item.UnitPrice * item.Quantity).ToString("0.00"))</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-sm-6">
+                                <h6 class="text-muted mb-1">Payment Method</h6>
+                                <p>
+                                    <strong>@GetPaymentMethodString(order.Payment?.Method)</strong><br />
+                                    Status: <span class="badge @(order.Payment?.Status == PaymentStatus.Paid ? "bg-success" : "bg-warning")">@order.Payment?.Status</span>
+                                </p>
+                            </div>
+                            <div class="col-sm-6 text-sm-end">
+                                <table class="table table-borderless table-sm">
+                                    <tr>
+                                        <td>Subtotal:</td>
+                                        <td class="text-end">₱@order.TotalAmount.ToString("0.00")</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Shipping:</td>
+                                        <td class="text-end text-success">Free</td>
+                                    </tr>
+                                    <tr class="fw-bold" style="font-size: 1.2rem; color: var(--primary-color);">
+                                        <td>Total:</td>
+                                        <td class="text-end">₱@order.TotalAmount.ToString("0.00")</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-5">
+                            <button class="btn btn-outline-primary me-2" onclick="window.print()">
+                                🖨️ Print Receipt
+                            </button>
+                            <a href="/" class="btn btn-primary">Return to Store</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int OrderId { get; set; }
+
+    private Order? order;
+
+    protected override async Task OnInitializedAsync()
+    {
+        order = await DbContext.Orders
+            .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+            .Include(o => o.Payment)
+            .FirstOrDefaultAsync(o => o.Id == OrderId);
+    }
+
+    private string GetPaymentMethodString(PaymentMethod? method)
+    {
+        return method switch
+        {
+            PaymentMethod.GCash => "GCash",
+            PaymentMethod.CashOnDelivery => "Cash on Delivery",
+            PaymentMethod.Card => "Credit/Debit Card",
+            _ => "Unknown"
+        };
+    }
+}
