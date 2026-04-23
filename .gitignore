@@ -6,8 +6,8 @@
 .vs/
 .idea/
 .vscode/
-*.db
-*.db-shm
-*.db-wal
+# *.db
+# *.db-shm
+# *.db-wal
 appsettings.json
 appsettings.Development.json
