@@ -51,6 +51,19 @@ public static class DbInitializer
             new Product { Name = "Hazelnut Praline Box", Description = "Luxurious chocolates filled with smooth hazelnut praline.", Price = 750.00m, ImageUrl = "https://images.unsplash.com/photo-1606312619070-d421acac5a8c?w=400&h=300&fit=crop", Category = ProductCategory.Chocolate, StockQuantity = 15 }
         };
 
+        // 1. Remove products that are NOT in our new curated list
+        var seedNames = seedProducts.Select(p => p.Name).ToList();
+        var productsToRemove = await context.Products
+            .Where(p => !seedNames.Contains(p.Name))
+            .ToListAsync();
+            
+        if (productsToRemove.Any())
+        {
+            context.Products.RemoveRange(productsToRemove);
+            await context.SaveChangesAsync();
+        }
+
+        // 2. Add or Update the curated products
         foreach (var sp in seedProducts)
         {
             var dbProduct = await context.Products.FirstOrDefaultAsync(p => p.Name == sp.Name);
@@ -64,6 +77,7 @@ public static class DbInitializer
                 dbProduct.Category = sp.Category;
                 dbProduct.Description = sp.Description;
                 dbProduct.ImageUrl = sp.ImageUrl;
+                dbProduct.StockQuantity = sp.StockQuantity;
             }
         }
         await context.SaveChangesAsync();
