@@ -72,23 +72,14 @@
 
     private async Task AddToCart(Product product)
     {
-        try 
-        {
-            await JS.InvokeVoidAsync("alert", $"Attempting to add {product.Name} to cart...");
-            Console.WriteLine($"[DEBUG] Adding product {product.Name} (ID: {product.Id}) to cart.");
-            CartService.AddToCart(product);
-            
-            // Visual feedback
-            addingProductId = product.Id;
-            StateHasChanged();
-            
-            await Task.Delay(2000);
-            addingProductId = 0;
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[ERROR] AddToCart failed: {ex.Message}");
-        }
+        CartService.AddToCart(product);
+        
+        // Visual feedback
+        addingProductId = product.Id;
+        StateHasChanged();
+        
+        await Task.Delay(2000);
+        addingProductId = 0;
+        StateHasChanged();
     }
 }
