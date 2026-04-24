@@ -15,10 +15,10 @@ builder.Services.AddRazorComponents()
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.KnownProxies.Clear();
-    options.KnownNetworks.Clear();
+    options.KnownIPNetworks.Clear();
 });
 
-builder.Services.AddSingleton<CakeFlowerShop.Services.CartService>();
+builder.Services.AddScoped<CakeFlowerShop.Services.CartService>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityRedirectManager>();
