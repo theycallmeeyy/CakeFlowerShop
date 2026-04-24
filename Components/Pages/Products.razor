@@ -41,7 +41,16 @@
                             <p class="product-desc">@product.Description</p>
                             <div class="mt-auto d-flex justify-content-between align-items-center">
                                 <div class="product-price">₱@product.Price.ToString("0.00")</div>
-                                <button class="btn btn-primary btn-sm" @onclick="() => AddToCart(product)">Add to Cart</button>
+                                <button class="btn btn-primary btn-sm" @onclick="() => AddToCart(product)" disabled="@(addingProductId == product.Id)">
+                                    @if (addingProductId == product.Id)
+                                    {
+                                        <span>Added!</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Add to Cart</span>
+                                    }
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -50,17 +59,26 @@
         </div>
     }
 </div>
-
 @code {
     private List<Product>? products;
+    private int addingProductId;
 
     protected override async Task OnInitializedAsync()
     {
         products = await DbContext.Products.ToListAsync();
     }
 
-    private void AddToCart(Product product)
+    private async Task AddToCart(Product product)
     {
+        Console.WriteLine($"[DEBUG] Adding product {product.Name} (ID: {product.Id}) to cart.");
         CartService.AddToCart(product);
+        
+        // Visual feedback
+        addingProductId = product.Id;
+        StateHasChanged();
+        
+        await Task.Delay(2000);
+        addingProductId = 0;
+        StateHasChanged();
     }
 }
