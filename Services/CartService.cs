@@ -48,10 +48,13 @@ public class CartService
     {
         try 
         {
-            var json = JsonSerializer.Serialize(_items);
-            await _js.InvokeVoidAsync("localStorage.setItem", "cart", json);
+            if (_js != null)
+            {
+                var json = JsonSerializer.Serialize(_items);
+                await _js.InvokeVoidAsync("localStorage.setItem", "cart", json);
+            }
         }
-        catch { /* Ignore during pre-rendering */ }
+        catch { /* JS not ready */ }
     }
 
     public void AddToCart(Product product, int quantity = 1)
