@@ -77,7 +77,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
-app.MapStaticAssets();
+// app.MapStaticAssets(); // Disabled for reliability
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
