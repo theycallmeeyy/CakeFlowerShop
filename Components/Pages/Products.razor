@@ -85,16 +85,15 @@
     {
         get
         {
-            if (string.IsNullOrWhiteSpace(searchTerm))
-                return products ?? new List<Product>();
+            if (products == null) return Enumerable.Empty<Product>();
+            if (string.IsNullOrWhiteSpace(searchTerm)) return products;
 
-            var keywords = searchTerm.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            return (products ?? new List<Product>()).Where(p => 
-                keywords.All(k => 
-                    p.Name.Contains(k, StringComparison.OrdinalIgnoreCase) || 
-                    p.Description.Contains(k, StringComparison.OrdinalIgnoreCase) ||
-                    p.Category.ToString().Contains(k, StringComparison.OrdinalIgnoreCase)
-                )
+            var term = searchTerm.Trim().ToLower();
+            return products.Where(p => 
+                p.Name.ToLower().Contains(term) || 
+                p.Category.ToString().ToLower().Contains(term) ||
+                (term.EndsWith("s") && p.Name.ToLower().Contains(term.Substring(0, term.Length - 1))) || // Handle "tulips" matching "tulip"
+                p.Description.ToLower().Contains(term)
             );
         }
     }
