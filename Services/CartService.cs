@@ -31,10 +31,14 @@ public class CartService(IJSRuntime js)
             if (!string.IsNullOrEmpty(json))
             {
                 _items = JsonSerializer.Deserialize<List<CartItem>>(json) ?? new();
+                Console.WriteLine($"[CART] Loaded {_items.Count} items from localStorage");
                 NotifyStateChanged();
             }
         }
-        catch { /* Ignore during pre-rendering */ }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[CART] Initialization failed: {ex.Message}");
+        }
         
         _isInitialized = true;
     }
@@ -47,9 +51,13 @@ public class CartService(IJSRuntime js)
             {
                 var json = JsonSerializer.Serialize(_items);
                 await js.InvokeVoidAsync("localStorage.setItem", "cart", json);
+                Console.WriteLine($"[CART] Saved {_items.Count} items to localStorage");
             }
         }
-        catch { /* JS not ready */ }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[CART] Save failed: {ex.Message}");
+        }
     }
 
     public void AddToCart(Product product, int quantity = 1)
@@ -63,6 +71,8 @@ public class CartService(IJSRuntime js)
         {
             _items.Add(new CartItem { Product = product, Quantity = quantity });
         }
+        
+        Console.WriteLine($"[CART] Item added: {product.Name}. New total items: {GetTotalCount()}");
         NotifyStateChanged();
         _ = SaveAsync();
     }
