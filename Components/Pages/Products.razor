@@ -14,6 +14,25 @@
 <div class="container mb-5" id="shop">
     <h2 class="section-title mt-5">All Products</h2>
 
+    <div class="search-container mb-4">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="form-control" placeholder="Search for cakes, flowers, or chocolates..." 
+                           @bind="searchTerm" @bind:event="oninput" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(searchTerm))
+    {
+        <p class="text-muted text-center mb-4">
+            Showing results for "<strong>@searchTerm</strong>" (@FilteredProducts.Count() found)
+        </p>
+    }
+
     @if (products == null)
     {
         <div class="text-center">
@@ -22,14 +41,19 @@
             </div>
         </div>
     }
-    else if (!products.Any())
+    else if (!FilteredProducts.Any())
     {
-        <p>No products found.</p>
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h3>No products found</h3>
+            <p class="text-muted">We couldn't find any products matching "@searchTerm". Try a different search term.</p>
+            <button class="btn btn-outline-primary mt-3" @onclick='() => searchTerm = ""'>Clear Search</button>
+        </div>
     }
     else
     {
         <div class="row g-4">
-            @foreach (var product in products)
+            @foreach (var product in FilteredProducts)
             {
                 <div class="col-md-4 col-sm-6">
                     <div class="product-card">
@@ -62,7 +86,16 @@
 </div>
 @code {
     private List<Product>? products;
+    private string searchTerm = "";
     private int addingProductId;
+
+    private IEnumerable<Product> FilteredProducts => 
+        string.IsNullOrWhiteSpace(searchTerm) 
+            ? products ?? new List<Product>() 
+            : (products ?? new List<Product>()).Where(p => 
+                p.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || 
+                p.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                p.Category.ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
 
     protected override async Task OnInitializedAsync()
     {
