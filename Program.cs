@@ -18,7 +18,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownIPNetworks.Clear();
 });
 
-builder.Services.AddScoped<CakeFlowerShop.Services.CartService>();
+builder.Services.AddSingleton<CakeFlowerShop.Services.CartService>();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityRedirectManager>();
