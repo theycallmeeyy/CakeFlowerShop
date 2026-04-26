@@ -93,8 +93,16 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await CartService.InitializeAsync();
         products = await DbContext.Products.ToListAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await CartService.InitializeAsync();
+            StateHasChanged();
+        }
     }
 
     private void OnSearchInput(ChangeEventArgs e)
