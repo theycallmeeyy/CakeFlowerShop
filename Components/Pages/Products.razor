@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Web
 @attribute [Authorize]
+@rendermode InteractiveServer
 @inject ApplicationDbContext DbContext
 @inject CartService CartService
 @inject IJSRuntime JS

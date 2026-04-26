@@ -11,16 +11,11 @@ public class CartItem
     public decimal TotalPrice => Product.Price * Quantity;
 }
 
-public class CartService
+public class CartService(IJSRuntime js)
 {
     private List<CartItem> _items = new();
-    private readonly IJSRuntime _js;
     private bool _isInitialized;
-
-    public CartService(IJSRuntime js)
-    {
-        _js = js;
-    }
+    // You can now use 'js' directly in your methods without needing a separate '_js' field.
 
     public IReadOnlyList<CartItem> Items => _items.AsReadOnly();
 
@@ -32,7 +27,7 @@ public class CartService
         
         try 
         {
-            var json = await _js.InvokeAsync<string>("localStorage.getItem", "cart");
+            var json = await js.InvokeAsync<string>("localStorage.getItem", "cart");
             if (!string.IsNullOrEmpty(json))
             {
                 _items = JsonSerializer.Deserialize<List<CartItem>>(json) ?? new();
@@ -48,10 +43,10 @@ public class CartService
     {
         try 
         {
-            if (_js != null)
+            if (js != null)
             {
                 var json = JsonSerializer.Serialize(_items);
-                await _js.InvokeVoidAsync("localStorage.setItem", "cart", json);
+                await js.InvokeVoidAsync("localStorage.setItem", "cart", json);
             }
         }
         catch { /* JS not ready */ }
