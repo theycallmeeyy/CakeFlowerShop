@@ -1,0 +1,109 @@
+@page "/wireframes"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>System Wireframe - Blossom & Bake</PageTitle>
+
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4" style="font-family: 'Playfair Display', serif; color: var(--primary-color);">System Architecture</h1>
+        <p class="lead text-muted">Click any component to visit the live wireframe/page.</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <!-- Storefront Column -->
+        <div class="col-md-4">
+            <div class="wireframe-group p-4 rounded shadow-sm bg-white h-100">
+                <h3 class="mb-4 border-bottom pb-2"><i class="fas fa-store me-2 text-accent"></i>Storefront</h3>
+                <div class="d-grid gap-3">
+                    <a href="/" class="btn btn-outline-primary p-3 text-start">
+                        <div class="fw-bold">Home Page</div>
+                        <div class="small text-muted">Hero section & intro</div>
+                    </a>
+                    <a href="/products" class="btn btn-outline-primary p-3 text-start">
+                        <div class="fw-bold">Products Shop</div>
+                        <div class="small text-muted">Search, Filter & Add to Cart</div>
+                    </a>
+                    <a href="/contact" class="btn btn-outline-primary p-3 text-start">
+                        <div class="fw-bold">Contact Us</div>
+                        <div class="small text-muted">Business info & map</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Flow Column -->
+        <div class="col-md-4">
+            <div class="wireframe-group p-4 rounded shadow-sm bg-white h-100">
+                <h3 class="mb-4 border-bottom pb-2"><i class="fas fa-shopping-cart me-2 text-accent"></i>Order Flow</h3>
+                <div class="d-grid gap-3">
+                    <a href="/cart" class="btn btn-outline-primary p-3 text-start">
+                        <div class="fw-bold">Shopping Cart</div>
+                        <div class="small text-muted">Manage chosen items</div>
+                    </a>
+                    <a href="/checkout" class="btn btn-outline-primary p-3 text-start">
+                        <div class="fw-bold">Checkout</div>
+                        <div class="small text-muted">Shipping & Payment info</div>
+                    </a>
+                    <a href="/receipt" class="btn btn-outline-primary p-3 text-start">
+                        <div class="fw-bold">Order Receipt</div>
+                        <div class="small text-muted">Final confirmation & summary</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support & Admin Column -->
+        <div class="col-md-4">
+            <div class="wireframe-group p-4 rounded shadow-sm bg-white h-100">
+                <h3 class="mb-4 border-bottom pb-2"><i class="fas fa-tools me-2 text-accent"></i>Management</h3>
+                <div class="d-grid gap-3">
+                    <a href="/report" class="btn btn-outline-primary p-3 text-start">
+                        <div class="fw-bold">Report Issues</div>
+                        <div class="small text-muted">Customer support form</div>
+                    </a>
+                    <a href="/admin" class="btn btn-outline-warning p-3 text-start">
+                        <div class="fw-bold">Admin Dashboard</div>
+                        <div class="small text-muted">Inventory & Order management</div>
+                    </a>
+                    <a href="/Account/Manage" class="btn btn-outline-secondary p-3 text-start">
+                        <div class="fw-bold">User Profile</div>
+                        <div class="small text-muted">Account settings & history</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5 p-4 bg-light rounded text-center border">
+        <h4 class="mb-3">System Logic Flow</h4>
+        <div class="mermaid-container p-3 bg-white rounded shadow-inner" style="overflow-x: auto;">
+            <pre class="mermaid">
+                graph LR
+                    A[Visitor] --> B[Products]
+                    B --> C[Cart]
+                    C --> D[Checkout]
+                    D --> E[Receipt]
+                    E --> F[(Database)]
+                    G[Admin] --> F
+            </pre>
+        </div>
+    </div>
+</div>
+
+<style>
+    .wireframe-group {
+        border-top: 4px solid var(--accent-color);
+        transition: transform 0.3s ease;
+    }
+    .wireframe-group:hover {
+        transform: translateY(-5px);
+    }
+    .btn-outline-primary:hover, .btn-outline-warning:hover, .btn-outline-secondary:hover {
+        background-color: var(--bg-color);
+        color: inherit;
+        border-color: var(--accent-color);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .text-accent { color: var(--accent-color); }
+</style>
