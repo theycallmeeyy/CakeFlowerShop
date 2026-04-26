@@ -117,6 +117,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await CartService.InitializeAsync();
         products = await DbContext.Products.ToListAsync();
     }
 

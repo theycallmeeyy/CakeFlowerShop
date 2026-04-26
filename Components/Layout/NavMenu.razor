@@ -81,6 +81,15 @@
         CartService.OnChange += HandleCartChange;
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await CartService.InitializeAsync();
+            StateHasChanged();
+        }
+    }
+
     private void HandleCartChange()
     {
         InvokeAsync(StateHasChanged);
