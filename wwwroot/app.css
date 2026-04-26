@@ -1,6 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
 /* Global Search Bar Styles */
+.search-box-wrapper {
+    background: transparent;
+    border: none;
+}
+
 .search-box {
     position: relative;
     box-shadow: 0 10px 30px rgba(0,0,0,0.08);
@@ -9,7 +14,6 @@
     transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
     background: white;
     border: 1px solid rgba(0,0,0,0.05);
-    margin-bottom: 25px;
 }
 
 .search-box:hover {
